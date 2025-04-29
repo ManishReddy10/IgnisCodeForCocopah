@@ -29,15 +29,17 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
  * project.
  */
 public class Robot extends TimedRobot {
-  private final CANBus kCANBus = new CANBus("canivore");
+  private final CANBus kCANBus = new CANBus("rio");
 
-  private final TalonFX leftLeader = new TalonFX(1, kCANBus);
+  private final TalonFX leftLeader = new TalonFX(1, kCANBus); //Left front = left leader
   private final TalonFX leftFollower = new TalonFX(2, kCANBus);
   private final TalonFX rightLeader = new TalonFX(3, kCANBus);
   private final TalonFX rightFollower = new TalonFX(4, kCANBus);
 
   SparkMax shooterLeader;
-  SparkMax shooterFollower;
+  SparkMax hopperMotor;
+
+  // SparkMax shooterFollower;
 
   private final DutyCycleOut leftOut = new DutyCycleOut(0);
   private final DutyCycleOut rightOut = new DutyCycleOut(0);
@@ -73,13 +75,16 @@ public class Robot extends TimedRobot {
     leftLeader.setSafetyEnabled(true);
     rightLeader.setSafetyEnabled(true);
 
-    shooterLeader = new SparkMax(1, MotorType.kBrushless);
-    shooterFollower = new SparkMax(1, MotorType.kBrushless);
+    shooterLeader = new SparkMax(10, MotorType.kBrushless);
+    hopperMotor = new SparkMax(12, MotorType.kBrushless);
+    
+    // shooterFollower = new SparkMax(10, MotorType.kBrushless);
 
 
     SparkMaxConfig globalConfig = new SparkMaxConfig();
     SparkMaxConfig shooterLeaderConfig = new SparkMaxConfig();
     SparkMaxConfig shooterFollowerConfig = new SparkMaxConfig();
+    SparkMaxConfig hopperMotorConfig = new SparkMaxConfig();
 
     globalConfig
       .smartCurrentLimit(50)
@@ -87,13 +92,18 @@ public class Robot extends TimedRobot {
 
     shooterLeaderConfig
       .apply(globalConfig);
+
+    hopperMotorConfig.
+      apply(globalConfig);
     
-    shooterFollowerConfig
-       .apply(globalConfig)
-       .follow(shooterLeader.getDeviceId());
+    // shooterFollowerConfig
+    //    .apply(globalConfig)
+    //    .follow(shooterLeader.getDeviceId())
+    //    .inverted(true);
 
     shooterLeader.configure(shooterLeaderConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
-    shooterFollower.configure(shooterFollowerConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+    hopperMotor.configure(hopperMotorConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+    // shooterFollower.configure(shooterFollowerConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
 
   }
 
@@ -110,7 +120,7 @@ public class Robot extends TimedRobot {
     // }
 
     SmartDashboard.putNumber("Left Out", shooterLeader.getAppliedOutput());
-    SmartDashboard.putNumber("Right Out", shooterFollower.getAppliedOutput());
+    // SmartDashboard.putNumber("Right Out", shooterFollower.getAppliedOutput());
   }
 
   @Override
@@ -139,6 +149,16 @@ public class Robot extends TimedRobot {
 
     double shooterPercentOutput = joystick.getRightTriggerAxis();
     shooterLeader.set(-shooterPercentOutput);
+    // shooterLeader.set(0.9);
+
+    if (joystick.getRightBumperButton()) {
+      hopperMotor.set(0.9);
+    } else {
+    hopperMotor.set(0);
+
+    }
+
+
   }
 
   @Override
